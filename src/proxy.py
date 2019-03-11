@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+
+
 __doc__ = """Modified by sandro gauci for surfjack
 
 Originally called: Tiny HTTP Proxy.
@@ -13,19 +15,23 @@ Any help will be greatly appreciated.		SUZUKI Hisao
 
 __version__ = "0.2.2"
 
-import BaseHTTPServer, select, socket, urlparse, SocketServer
+#import BasicHttpServer, select, socket, urlparse, SocketServer
+
+from http.server import *
+import socket
+from urllib.parse import urlparse
 import cgi, urllib
 from threading import Thread
 import logging
+import html
 
 class Ate:
     def __init__(self):
         self.cookies = False
 
-
-class ProxyHandler (BaseHTTPServer.BaseHTTPRequestHandler):
+class ProxyHandler (BaseHTTPRequestHandler):
     log = logging.getLogger('ProxyHandler')
-    __base = BaseHTTPServer.BaseHTTPRequestHandler
+    __base = BaseHTTPRequestHandler
     __base_handle = __base.handle
     setcookiepkt = "HTTP/1.0 200 OK\r\nContent-Type: text/html\r\nLength: %s\r\n%s\r\n%s" 
     server_version = "TinyHTTPProxy/" + __version__
@@ -46,7 +52,7 @@ class ProxyHandler (BaseHTTPServer.BaseHTTPRequestHandler):
             host_port = netloc, 80
         self.log.debug( "\t" "connect to %s:%d" % host_port )
         try: soc.connect(host_port)
-        except socket.error, arg:
+        except socket.error as arg:
             try: msg = arg[1]
             except: msg = arg
             self.send_error(404, msg)
@@ -76,7 +82,7 @@ class ProxyHandler (BaseHTTPServer.BaseHTTPRequestHandler):
         (scm, netloc, path, params, query, fragment) = urlparse.urlparse(
             self.path, 'http')
         if scm != 'http' or fragment or not netloc:
-            self.send_error(400, "bad url %s" % cgi.escape(self.path))
+            self.send_error(400, "bad url %s" % html.escape(self.path))
             return
         soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
@@ -86,6 +92,7 @@ class ProxyHandler (BaseHTTPServer.BaseHTTPRequestHandler):
                 self.log.debug('time to set some cookies')
                 if len(cookiehosts) > 0:
                     self.log.debug('no cookies to set')
+
                     if netloc in cookiehosts:
                         newcookie = cookiejar[netloc]
                         headers=''.join(map(lambda x: 'Set-cookie: %s;\r\n' % x, newcookie.split(';')))
@@ -163,7 +170,7 @@ class ProxyHandler (BaseHTTPServer.BaseHTTPRequestHandler):
     do_DELETE=do_GET
 
 class ThreadingHTTPServer (SocketServer.ThreadingMixIn,
-                           BaseHTTPServer.HTTPServer): pass
+                           BasicHttpServer.HTTPServer): pass
 
 
 def dummy_log():
