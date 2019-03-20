@@ -97,7 +97,7 @@ class ProxyHandler (BaseHTTPRequestHandler):
                         newcookie = cookiejar[netloc]
                         headers=''.join(map(lambda x: 'Set-cookie: %s;\r\n' % x, newcookie.split(';')))
                         nextpos = cookiehosts.index(netloc)+1
-                        print 'setting cookie for %s' % netloc
+                        print('setting cookie for %s' % netloc)
                         if nextpos >= len(cookiehosts):
                             body = "<h1> all cookies set</h1>"
                             ate.cookies = True                            

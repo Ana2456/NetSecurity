@@ -14,6 +14,6 @@ from twisted.internet import reactor
 from twisted.web import  server
 import reverse_proxy
 
-site = server.Site(reverse_proxy.ReverseProxyResource('www.yahoo.com', 80, b''))
+site = server.Site(reverse_proxy.ReverseProxyResource('weevil.info', 80, b''))
 reactor.listenTCP(8080, site)
 reactor.run()
