@@ -175,16 +175,16 @@ class ReverseProxyResource(Resource):
             self.reactor)
 
     def render(self, request):
-        """
-        Render a request by forwarding it to the proxied server.
-        """
-        # RFC 2616 tells us that we can omit the port if it's the default port,
-        # but we have to provide it otherwise
         if self.port == 80:
             host = self.host
         else:
             host = u"%s:%d" % (self.host, self.port)
         request.requestHeaders.setRawHeaders(b"host", [host.encode('ascii')])
+        gidd = request.getCookie(b'_gid')
+        print('gid cookie:', gidd)
+        for key in request.received_cookies.keys():
+            print("cookies:",key," ", request.received_cookies.get(key))
+
         request.content.seek(0, 0)
         qs = urllib_parse.urlparse(request.uri)[4]
         if qs:

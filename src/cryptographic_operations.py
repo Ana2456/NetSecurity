@@ -144,17 +144,8 @@ def load_public_key(filename):
     public_key = load_pem_public_key(pemlines, default_backend())
     return public_key
 
-def generate_secret_key(message,k):
-    value = message + k
-    h = hashlib.sha256(value.encode('ascii')).digest()
-    return base64.urlsafe_b64encode(h).decode('ascii')
 
-def get_secret_parameter(p):
-    while True:
-        k = random.randrange(1, p-1)
-        if gcd(k, (p - 1)) == 1:
-            break
-    return str(k)
+
 
 def get_key_pair():
     if os.path.isfile('private_key.pem') and os.path.isfile('public_key.pem') and os.path.isfile('key_component.txt'):
@@ -172,6 +163,19 @@ def get_key_pair():
         f.write(str(p))
         f.close()
         return (publicKey, privateKey, p)
+
+
+def get_secret_parameter(p):
+    while True:
+        k = random.randrange(1, p-1)
+        if gcd(k, (p - 1)) == 1:
+            break
+    return str(k)
+
+def generate_secret_key(message,k):
+    value = message + k
+    h = hashlib.sha256(value.encode('ascii')).digest()
+    return base64.urlsafe_b64encode(h).decode('ascii')
 
 def symmetric_encryption(plainText, key):
     log = logging.getLogger('symmetricEncryption')
