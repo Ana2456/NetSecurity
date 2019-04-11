@@ -4,9 +4,11 @@ import random
 import os
 import logging
 import sqlite3
+import datetime
 
 from cryptography.exceptions import InvalidSignature
-from cryptography.hazmat.primitives import padding, hashes
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
@@ -280,7 +282,7 @@ def retrieve_secret_parameter(id):
         return k
 
 if __name__ == '__main__':
-    publicKey, privateKey, p = get_key_pair()
+    #publicKey, privateKey, p = get_key_pair()
     # print(p)
     # save_private_key(privateKey,"private_key.pem")
     # save_public_key(publicKey,"public_key.pem")
@@ -288,28 +290,70 @@ if __name__ == '__main__':
     # f.write(str(p))
     # f.close()
 
-    # privateKey = load_private_key("private_key.pem")
-    # publicKey = load_public_key("public_key.pem")
+    privateKey = load_private_key("private_key.pem")
+    publicKey = load_public_key("public_key.pem")
 
     f = open("key_component.txt", "r+")
     content = f.read()
     f.close()
     p = int(content)
-    print('p='+content)
 
+    id = 'aslkjfgbvjkeltbmdfgbjr'
+
+    print('Encryption starts')
+
+    start_time = datetime.datetime.now()
     k = get_secret_parameter(p)
-    print('k='+str(k))
-    id = 'aserrytigtyufgh'
-    store_secret_parameter(id,k)
-    k1 = retrieve_secret_parameter(id)
-    print("k1="+k1[0])
-    # message = 'aslkjfgnrubvjkeltbmdfgbjr'
-    # plain_text = "hello world"
-    # key = generate_secret_key(message,k)
-    # plain_text_bytes = plain_text.encode('utf-8')
-    # f = Fernet(key)
-    # encrypted_bytes = f.encrypt(plain_text_bytes)
-    # encrypted_text = base64.urlsafe_b64encode(encrypted_bytes)
-    # decrypted_bytes = f.decrypt(base64.urlsafe_b64decode(encrypted_text))
-    # decrypted_text = decrypted_bytes.decode('utf-8')
+    elapsedTime = datetime.datetime.now() - start_time
+    print('secret parameter generation: %d'%elapsedTime.microseconds)
 
+    start_time = datetime.datetime.now()
+    store_secret_parameter(id, k)
+    elapsedTime = datetime.datetime.now() - start_time
+    print('secret parameter storage: %d'%elapsedTime.microseconds)
+
+    message = 'aserrytigtyufgh'
+
+    start_time = datetime.datetime.now()
+    secret_key1 = generate_secret_key(message,k)
+    elapsedTime = datetime.datetime.now() - start_time
+    print('secret key generation: %d'%elapsedTime.microseconds)
+
+    plain_text = 'aserrytigtyufghaslkjfgbvjkeltbmdfgbjr'
+
+    start_time = datetime.datetime.now()
+    cipher_text = symmetric_encryption(plain_text,secret_key1)
+    elapsedTime = datetime.datetime.now() - start_time
+    print('encryption: %d'%elapsedTime.microseconds)
+
+    full_text = plain_text+str(cipher_text)
+
+    # start_time = datetime.datetime.now()
+    # signature = create_digitalSignature(full_text, privateKey)
+    # elapsedTime = datetime.datetime.now() - start_time
+    # print('digital signature generation: %d'%elapsedTime.microseconds)
+
+    print('Encryption ends')
+
+    print('Decryption starts')
+
+    start_time = datetime.datetime.now()
+    k1 = retrieve_secret_parameter(id)
+    elapsedTime = datetime.datetime.now() - start_time
+    print('secret parameter retrieval: %d'%elapsedTime.microseconds)
+
+    start_time = datetime.datetime.now()
+    secret_key2 = generate_secret_key(message,k)
+    elapsedTime = datetime.datetime.now() - start_time
+    print('secret key generation: %d'%elapsedTime.microseconds)
+    start_time = datetime.datetime.now()
+    plain_text = symmetric_decryption(cipher_text, secret_key2)
+    elapsedTime = datetime.datetime.now() - start_time
+    print('decryption: %d'%elapsedTime.microseconds)
+
+    # start_time = datetime.datetime.now()
+    # verification = verify_digitalSignature(signature, full_text, publicKey)
+    # elapsedTime = datetime.datetime.now() - start_time
+    # print('digital signature verification: %d'%elapsedTime.microseconds)
+
+    print('Decryption ends')
